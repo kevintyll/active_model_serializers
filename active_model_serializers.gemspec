@@ -41,6 +41,9 @@ Gem::Specification.new do |spec|
     # 'minitest'
     # 'thread_safe'
 
+  spec.add_development_dependency 'activerecord', rails_versions
+  spec.add_development_dependency 'minitest-reporters'
+
   # Soft dependency for pagination
   spec.add_development_dependency 'kaminari', ' ~> 0.16.3'
   spec.add_development_dependency 'will_paginate', '~> 3.0', '>= 3.0.7'
