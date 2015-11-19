@@ -80,12 +80,7 @@ module ActionController
 
           post.title = 'ZOMG a New Post'
 
-          expires_in = [
-            PostSerializer._cache_options[:expires_in],
-            CommentSerializer._cache_options[:expires_in],
-          ].max + 200
-
-          Timecop.travel(Time.zone.now + expires_in) do
+          serializer_cache_expired(PostSerializer, CommentSerializer) do
             render json: post
           end
         end
@@ -95,7 +90,9 @@ module ActionController
           author = Author.new(id: 1, name: 'Joao Moura.')
           post = Post.new(id: 1, title: 'ZOMG a New Post', body: 'Body', comments: [comment], author: author)
 
-          render json: post
+          Timecop.freeze(Time.zone.now) do
+            render json: post
+          end
         end
 
         def render_fragment_changed_object_with_only_cache_enabled
@@ -130,6 +127,21 @@ module ActionController
           like.time = Time.zone.now.to_s
 
           render json: like
+        end
+
+        private
+
+        def serializers_cache_expires_in(*serializers)
+          Array(serializers).map do |serializer|
+            serializer._cache_options[:expires_in]
+          end.compact.max + 200
+        end
+
+        def serializer_cache_expired(*serializers)
+          expires_in = serializers_cache_expires_in(*serializers)
+          Timecop.travel(Time.zone.now + expires_in) do
+            yield
+          end
         end
       end
 
